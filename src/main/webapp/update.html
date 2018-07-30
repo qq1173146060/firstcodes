@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link rel="stylesheet" href="css/layui.css">
+</head>
+<body>
+	<form class="layui-form" action="" lay-filter="myFrom">
+	
+	  <div class="layui-form-item">
+	    <label class="layui-form-label">用户名 ： </label>
+	    <div class="layui-input-block">
+	      <input type="text" name="name" id="name" required  lay-verify="required" placeholder="修改后的用户名" autocomplete="off" class="layui-input">
+	    </div>
+	  </div>
+	  
+	  <div class="layui-form-item">
+	    <label class="layui-form-label">年龄 ： </label>
+	    <div class="layui-input-inline">
+	      <input type="text" name="age" id="age" required lay-verify="number" placeholder="修改后的年龄，只能是数字" autocomplete="off" class="layui-input">
+	    </div>
+	  </div>
+	  
+	  <div class="layui-form-item">
+	    <label class="layui-form-label">性别</label>
+	    <div class="layui-input-block">
+	      <input type="radio" name="sex" value="男" title="男">
+	      <input type="radio" name="sex" value="女" title="女">
+	    </div>
+	  </div>
+	  
+	  <div class="layui-form-item">
+	    <div class="layui-input-block">
+	      <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+	      <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+	    </div>
+	  </div>
+	</form>
+	
+	<script type="text/javascript" src="jquery-3.3.1.min.js"></script>
+	<script type="text/javascript" src="layui.js"></script>
+	 
+	<script type="text/javascript">
+	
+	//Demo
+	
+	function close() {
+		var close = parent.open;
+		layui.use('layer', function(){
+			var layer = parent.layui.layer;
+			layer.close(close);
+		});
+	}
+	
+	function refresh() {
+		var refresh = parent.currentTable;
+		refresh.reload({});
+	}
+	
+	// 赋值 ， 从父类得到的data来接收到当前行的信息，将信息保存在form上
+	layui.use('form', function(){
+	 
+	  // 赋值
+	  var form = layui.form;
+		
+	  var par = parent.data;
+	  
+	  var bean = {
+		name : par.name,
+		age : par.age,
+		sex : par.sex
+	  }
+	  
+	  form.val("myFrom" , bean)
+	  
+	  //监听提交
+	  form.on('submit(formDemo)', function(data){
+	     
+	     var obj = {
+	    	 id : par.id,
+	    	 name : data.field.name,
+	    	 age : data.field.age,
+	    	 sex : data.field.sex
+	     }
+	     
+	     console.log(obj)
+	     
+	     $.ajax({
+			type : "put",
+			url : "/stu/update",
+			data : obj,
+			dataType:"json",
+			success : function(e) {
+				if(e.code == 0){
+					alert('修改成功');
+					close();
+					refresh();
+				} else {
+					alert('修改失败');
+					alert(e.msg)
+				}
+			}
+		})
+	    return false;
+	  });
+	});
+	</script>
+	
+</body>
+</html>

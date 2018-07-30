@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link rel="stylesheet" href="css/layui.css">
+</head>
+<body>
+
+	<div style="width: 40%">
+		<form class="layui-form" action="">
+		
+		  <div class="layui-inline">
+		    <label class="layui-form-label">输入框</label>
+		    
+		    <div class="layui-input-block">
+		      <input type="text" id="name" name="title" required  lay-verify="required" placeholder="请输入用户名" autocomplete="off" class="layui-input">
+		    </div>
+		  </div>
+		  
+	    <div class="layui-inline">
+	      <button class="layui-btn layui-icon layui-icon-search" lay-submit lay-filter="formDemo">立即提交</button>
+	    </div>
+	    
+	    <div class="layui-inline">
+	     <a href="javascript:addStu()" class="layui-btn layui-icon layui-icon-add-1"> 新增</a>
+	    </div>
+	    
+	    <div class="layui-inline">
+	     <a href="javascript:deleteStu()" class="layui-btn layui-icon layui-icon-delete"> 删除</a>
+	    </div>
+	    
+		</form>
+	</div>
+	
+
+	<table id="demo" lay-filter="test"></table>
+	
+	<script type="text/html" id="barDemo">
+ 		<a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+ 		<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+	</script>
+
+	<script type="text/javascript" src="https://cdn.bootcss.com/jquery/1.12.4/jquery.js"></script>
+	<script type="text/javascript" src="layui.js"></script>
+	
+	<script type="text/javascript">
+	var currentTable = null;
+	var data = null;
+	var open = null;
+	
+		layui.use('table', function(){
+		  
+		var table = layui.table;
+		  
+		  //第一个实例
+		  currentTable = table.render({
+		     elem: '#demo'
+		    ,height: 315
+		    ,url: '/stu/query' //数据接口
+		    ,page: true //开启分页
+		    ,cols: [[ //表头
+		       {type: "checkbox"}
+		      ,{field: 'id', title: 'ID', width:"20%"}
+		      ,{field: 'name', title: '用户名', width:"20%"}
+		      ,{field: 'age', title: '年龄', width:"20%"}
+		      ,{field: 'sex', title: '性别', width:"20%"}
+		      ,{fixed: 'right', title: '操作', width: 165, align:'center', toolbar: '#barDemo'}
+		    ]]
+		  });
+		  
+	 	/*
+			删除
+		*/
+		table.on('tool(test)', function(obj){ //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+			data = obj.data
+		    layEvent = obj.event; //获得 lay-event 对应的值
+		    if(layEvent === 'del'){
+		      layer.confirm('确定要删除数据吗？', function(index){
+		        obj.del(); //删除对应行（tr）的DOM结构
+		        layer.close(index);
+		        var bean = {
+		        	id : obj.data.id
+		        }
+		        
+		        //向服务端发送删除指令
+		        $.ajax({
+		        	type : "post",
+		        	url  : "/stu/delete",
+		        	data : bean,
+					dataType:"json",
+					success : function(e) {
+						if (e.code == 0) {
+							alert("删除成功")
+						} else {
+							alert("删除成功")
+						}
+					}
+		        })
+		        
+		      });
+		    } else if(layEvent === 'edit'){
+		    	layui.use('layer', function(index){
+		    		
+				  var layer = layui.layer;
+				  
+				  open = layer.open({
+			    	title:'修改用户信息',
+				    type: 2,
+				    area: ['500px', '300px'],
+				    content: 'update.html'
+	           	  });
+			      
+				}); 
+		    }
+		  });
+		  
+		});
+		
+		//Demo
+		// 模糊查询
+		layui.use('form', function(){
+		  var form = layui.form;
+		  
+		  //监听提交
+		  form.on('submit(formDemo)', function(data){
+			  
+			  currentTable.reload({
+				 where : data.field
+			  });
+			  
+			  return false;
+		  });
+		});
+		
+		/*
+		增加
+		*/
+		function addStu() {
+			layui.use('layer', function(){
+			  var layer = layui.layer;
+			  
+			  open = layer.open({
+		    	title:'新增用户',
+			    type: 2,
+			    area: ['500px', '300px'],
+			    content: 'addStu.html'
+           	  });
+		      
+			});     
+		}
+		
+		/*
+		多选删除
+		*/
+		
+		function deleteStu() {
+			var table = layui.table;
+			
+			var checkStatus = table.checkStatus('demo'); //test即为基础参数id对应的值
+			
+			if(checkStatus.data.length == 0){
+				 var layer = layui.layer;
+				 layer.msg('请选择要删除的列');
+				 return;
+			}
+			
+			var del = "";
+			
+			for (var i = 0; i < checkStatus.data.length; i++) {
+				
+				var id = checkStatus.data[i].id;
+				
+				del += id+",";
+				
+			}
+			
+			del = del.substring(0,del.length-1);
+			
+			$.ajax({
+				type : "post",
+				url : "/stu/deleteAll",
+				data : {"_method" : "delete",
+						id : del
+					   },
+				dataType:"json",
+				success : function(e) {
+					if(e.code == 0){
+						var layer = layui.layer;
+						layer.msg('删除成功');
+						currentTable.reload({});
+					} else {
+						var layer = layui.layer;
+						layer.msg('删除失败');
+					}
+				}
+			})
+		}
+		
+	</script>
+	
+</body>
+</html>

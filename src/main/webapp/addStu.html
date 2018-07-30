@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link rel="stylesheet" href="css/layui.css">
+</head>
+<body>
+	<form class="layui-form" action="">
+	
+	  <div class="layui-form-item">
+	    <label class="layui-form-label">用户名 ： </label>
+	    <div class="layui-input-block">
+	      <input type="text" name="name" required  lay-verify="required" placeholder="请增加用户名" autocomplete="off" class="layui-input">
+	    </div>
+	  </div>
+	  
+	  <div class="layui-form-item">
+	    <label class="layui-form-label">年龄 ： </label>
+	    <div class="layui-input-inline">
+	      <input type="text" name="age" required lay-verify="number" placeholder="请增加年龄，只能是数字" autocomplete="off" class="layui-input">
+	    </div>
+	  </div>
+	  
+	  <div class="layui-form-item">
+	    <label class="layui-form-label">性别</label>
+	    <div class="layui-input-block">
+	      <input type="radio" name="sex" value="男" title="男" checked>
+	      <input type="radio" name="sex" value="女" title="女">
+	    </div>
+	  </div>
+	  
+	  <div class="layui-form-item">
+	    <div class="layui-input-block">
+	      <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+	      <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+	    </div>
+	  </div>
+	</form>
+	
+	<script type="text/javascript" src="jquery-3.3.1.min.js"></script>
+	<script type="text/javascript" src="layui.js"></script>
+	 
+	<script type="text/javascript">
+	
+	function close() {
+		var close = parent.open;
+
+		layui.use('layer', function(){
+			var layer = parent.layui.layer;
+			layer.close(close);
+		});
+	}
+	
+	function refresh() {
+		var refresh = parent.currentTable;
+		refresh.reload({});
+	}
+	
+	//Demo
+	layui.use('form', function(){
+	  var form = layui.form;
+	  
+	  //监听提交
+	  form.on('submit(formDemo)', function(data){
+	    $.ajax({
+			type : "post",
+			url : "/stu/add",
+			data : data.field,
+			dataType:"json",
+			success : function(e) {
+				if(e.code == 0){
+					alert("新增成功")
+					close();
+					refresh();
+				} else {
+					alert(e.msg)
+				}
+			}
+		})
+	    return false;
+	  });
+	});
+	</script>
+	
+</body>
+</html>
